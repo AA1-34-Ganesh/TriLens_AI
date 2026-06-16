@@ -96,16 +96,7 @@ PORT=5000
 
 > **Important:** MongoDB Atlas must use a replica set (Atlas free tier M0 qualifies) for session-based transactions.
 
-### 3. Seed Admin User
-
-```bash
-cd backend
-node seed.js
-```
-
-This creates the initial Super Admin: `ADMIN001 / admin123`
-
-### 4. Run Development Servers
+### 3. Run Development Servers
 
 ```bash
 # Terminal 1 — Backend
