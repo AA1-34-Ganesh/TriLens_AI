@@ -3,7 +3,7 @@
 > Third Year Engineering Mini-Project | Edge AI + QR + PWA + MongoDB Atlas
 
 ---
-
+Live URL=
 ## Overview
 
 TriLens_AI is a full-stack, mobile-first Progressive Web Application that replaces traditional manual campus parking management with a sensorless, AI-assisted digital system.

@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 import Footer from "../components/Footer";
-
-const BASE = "/api";
 
 const statusLabel = (s) => {
   if (s === "available") return "Free";
@@ -32,7 +30,7 @@ function VehicleForm({ space, blockId, onSuccess, onCancel }) {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post(`${BASE}/blocks/${blockId}/park`, {
+      const res = await api.post(`/blocks/${blockId}/park`, {
         buildingName: space.buildingName,
         floorLevel: space.floorLevel,
         spaceId: space.spaceId,
@@ -204,7 +202,7 @@ function BlockMap({ blockId, onSelectSpace, highlightSpaceId }) {
 
   const fetchMap = useCallback(async () => {
     try {
-      const res = await axios.get(`${BASE}/blocks/${blockId}/map`);
+      const res = await api.get(`/blocks/${blockId}/map`);
       const data = res.data;
       setMapData(data);
       if (!activeBldg && data.buildings.length > 0) {
@@ -214,7 +212,7 @@ function BlockMap({ blockId, onSelectSpace, highlightSpaceId }) {
         }
       }
     } catch {
-      // silent
+  
     } finally {
       setLoading(false);
     }
@@ -323,7 +321,7 @@ export default function BlockLanding() {
 
   const fetchOverview = useCallback(async () => {
     try {
-      const res = await axios.get(`${BASE}/blocks/${blockId}/overview`);
+      const res = await api.get(`/blocks/${blockId}/overview`);
       setOverview(res.data);
     } catch (err) {
       setError(err.response?.data?.message || "Block not found");

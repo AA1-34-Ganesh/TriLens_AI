@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
-import axios from "axios";
 import Header from "../components/Header";
 
 
@@ -191,7 +190,7 @@ export default function BlockAdminDashboard() {
       )}
 
       <div className="px-4 py-4 space-y-4">
-        {/* Stats Row */}
+     
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: "Total Spaces", value: block.totalSpaces || 0, icon: "", color: "text-slate-300" },
@@ -207,7 +206,7 @@ export default function BlockAdminDashboard() {
           ))}
         </div>
 
-        {/* Occupancy bar */}
+     
         <div className="bg-[#1e293b] rounded-2xl p-4 border border-slate-700/60">
           <div className="flex justify-between text-xs mb-2">
             <span className="text-slate-400">Block Occupancy</span>
@@ -224,7 +223,7 @@ export default function BlockAdminDashboard() {
           </div>
         </div>
 
-        {/* Tab buttons */}
+
         <div className="flex gap-2 overflow-x-auto hide-scrollbar">
           {[
             { id: "tab-overview", key: "overview", label: " Overview" },
@@ -247,7 +246,7 @@ export default function BlockAdminDashboard() {
           ))}
         </div>
 
-        {/* ── OVERVIEW tab ── */}
+
         {tab === "overview" && (
           <div className="fade-in space-y-3">
             <h3 className="text-white font-semibold text-sm">Floor Breakdown</h3>
@@ -280,7 +279,7 @@ export default function BlockAdminDashboard() {
           </div>
         )}
 
-        {/* ── VEHICLES tab ── */}
+
         {tab === "vehicles" && (
           <div className="fade-in space-y-3">
             <div className="flex items-center justify-between">
@@ -307,7 +306,7 @@ export default function BlockAdminDashboard() {
           </div>
         )}
 
-        {/* ── SEARCH tab ── */}
+
         {tab === "search" && (
           <div className="fade-in space-y-4">
             <form onSubmit={handleSearch} className="flex gap-2">
@@ -352,7 +351,7 @@ export default function BlockAdminDashboard() {
           </div>
         )}
 
-        {/* ── MAP tab ── */}
+
         {tab === "map" && (
           <div className="fade-in">
             {highlightedLog && (
@@ -382,7 +381,7 @@ export default function BlockAdminDashboard() {
         )}
       </div>
 
-      {/* Bottom Nav */}
+
       <nav className="nav-bottom">
         {[
           { id: "nav-overview", key: "overview", icon: "", label: "Overview" },
@@ -487,7 +486,7 @@ function BlockAdminMap({ blockId, highlightSpaceId }) {
 
 async function loadBlockMapData(blockId, setMapData, setLoading, setActiveBldg, setActiveFloor) {
   try {
-    const res = await axios.get(`/api/blocks/${blockId}/map`);
+    const res = await api.get(`/blocks/${blockId}/map`);
     const data = res.data;
     setMapData(data);
     if (data.buildings.length > 0) {
@@ -495,7 +494,7 @@ async function loadBlockMapData(blockId, setMapData, setLoading, setActiveBldg, 
       setActiveFloor(prev => prev || data.buildings[0].floors[0]?.floorLevel);
     }
   } catch {
-    // silent
+
   } finally {
     setLoading(false);
   }
