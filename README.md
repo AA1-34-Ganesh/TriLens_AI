@@ -1,55 +1,159 @@
-# TriLens_AI: Intelligent Micro-Parking Management
+# TriLens_AI — Smart Campus Parking Management System
 
-**TriLens_AI** is a smart, full-stack solution designed to solve "Vehicle Displacement Anxiety" in dense, disorganized urban parking environments. By combining QR-based anchoring, manual grid mapping, and on-device AI landmark recognition, it ensures students and urban commuters can find their vehicles in seconds—even when GPS fails or physical markers are damaged.
-
----
-
-## SDG Alignment
-This project is built in alignment with **United Nations Sustainable Development Goal 11: Sustainable Cities and Communities**.
-* **Target 11.2:** Improving access to safe, affordable, and sustainable transport systems.
-* **Impact:** By reducing the time spent idling engines and wandering through parking lots, TriLens_AI reduces localized carbon emissions and optimizes the use of limited urban micro-spaces.
+> Third Year Engineering Mini-Project | Edge AI + QR + PWA + MongoDB Atlas
 
 ---
 
-## The TriLens Architecture
-To ensure 100% reliability, the system operates on a **Triple-Layer Strategy**:
+## Overview
 
-1. **Level 1 (The Optical Anchor):** High-speed QR/OCR scanning for instant zone identification.
-2. **Level 2 (The Failure Fallback):** An interactive SVG/Grid map for manual "Check-in" if physical tags are missing or damaged.
-3. **Level 3 (The AI Context):** On-device computer vision that detects environmental landmarks (e.g., "Near Blue Pillars") to provide human-readable retrieval hints.
+TriLens_AI is a full-stack, mobile-first Progressive Web Application that replaces traditional manual campus parking management with a sensorless, AI-assisted digital system.
 
----
-
-## Key Features
-* **Progressive Web App (PWA):** Zero-install, mobile-first experience that works offline via Service Workers.
-* **Edge AI Integration:** On-device Object Detection and OCR using TensorFlow.js (Zero server costs).
-* **Predictive Suggestions:** Smart-zone highlighting based on historical user parking patterns and time of day.
-* **Guard Mode:** A specialized interface for security personnel to update vehicle locations if rows are rearranged.
+**Core Capabilities:**
+- **Dynamic Parking Management:** Multi-building, multi-floor space tracking and block administration.
+- **Role-Based Access Control (RBAC):** Distinct interfaces for Students, Block Admins, and Super Admins.
+- **Edge AI Vehicle Retrieval:** TensorFlow.js (COCO-SSD) on-device landmark detection for visual context hints.
+- **QR-Code Spot Identification:** Static physical QR codes to prevent check-in spoofing.
+- **Concurrency Control:** Atomic MongoDB transactions to prevent double-booking.
+- **Offline-capable PWA:** Includes LocalStorage AI caching and a seamless web app installation experience.
+- **Analytics & Reporting:** Live visual dashboards for system health, global occupancy, and block-level logs.
 
 ---
 
 ## Tech Stack
-### **Frontend**
-* **Framework:** React.js (Vite)
-* **Styling:** Tailwind CSS (Optimized for high-glare outdoor visibility)
-* **AI Engine:** TensorFlow.js (COCO-SSD) & Tesseract.js (OCR)
-* **Offline Storage:** IndexedDB & LocalStorage
 
-### **Backend**
-* **Runtime:** Node.js
-* **Framework:** Express.js
-* **Database:** MongoDB Atlas (Cloud)
-* **Authentication:** JWT (JSON Web Tokens)
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React.js + Vite |
+| **Styling** | Tailwind CSS v3 |
+| **Routing** | React Router DOM v6 |
+| **HTTP Client** | Axios |
+| **QR Engine** | html5-qrcode & qrcode |
+| **Edge AI** | TensorFlow.js + COCO-SSD |
+| **PWA Support** | vite-plugin-pwa + Workbox |
+| **Backend** | Node.js + Express.js |
+| **Authentication**| JWT + bcryptjs |
+| **Database** | MongoDB Atlas + Mongoose |
 
 ---
 
-##  Project Structure
-```text
+## Project Structure
+
+```
 TriLens_AI/
-├── frontend/           # React PWA (Vite + Tailwind)
-│   ├── src/components/ # Scanner, ManualMap, AIOverlay
-│   └── src/utils/      # TensorFlow.js logic & OCR handlers
-├── backend/            # Node.js + Express API
-│   ├── models/         # MongoDB Schemas (ParkingLogs, Zones)
-│   └── routes/         # API Endpoints
-└── README.md           # Project Overview
+├── backend/
+│   ├── config/db.js
+│   ├── controllers/ (auth, admin, parking, user, block)
+│   ├── middleware/auth.js
+│   ├── models/ (User, Building, Block, Space, ParkingLog)
+│   ├── routes/ (auth, admin, parking, user, block)
+│   ├── seed.js
+│   └── server.js
+│
+└── frontend/
+    ├── public/ (PWA icons and manifest)
+    ├── src/
+    │   ├── components/ (Header, Footer, InteractiveMap, etc.)
+    │   ├── context/AuthContext.jsx
+    │   ├── pages/ (Login, Dashboard, BlockAdmin, UsersPage, Reports, etc.)
+    │   ├── utils/ (api.js, aiVision.js)
+    │   ├── App.jsx
+    │   ├── main.jsx
+    │   └── index.css
+    ├── tailwind.config.js
+    └── vite.config.js
+```
+
+---
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js v18+
+- MongoDB Atlas account (free tier works)
+- npm v9+
+
+### 1. Clone & Install
+
+```bash
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+### 2. Configure Environment
+
+Edit `backend/.env`:
+
+```env
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/trilens_ai?retryWrites=true&w=majority
+JWT_SECRET=trilens_super_secret_key_2024
+PORT=5000
+```
+
+> **Important:** MongoDB Atlas must use a replica set (Atlas free tier M0 qualifies) for session-based transactions.
+
+### 3. Seed Admin User
+
+```bash
+cd backend
+node seed.js
+```
+
+This creates the initial Super Admin: `ADMIN001 / admin123`
+
+### 4. Run Development Servers
+
+```bash
+# Terminal 1 — Backend
+cd backend
+npm run dev
+
+# Terminal 2 — Frontend
+cd frontend
+npm run dev
+```
+
+Frontend: http://localhost:5173  
+Backend API: http://localhost:5000
+
+---
+
+## Architecture Flow
+
+### 1. User Flows
+- **Students:** Sign up/login, scan QR or pick spot on Interactive Map, activate camera for AI landmark extraction, confirm parking.
+- **Block Admins:** Monitor assigned block occupancy, manage active vehicles, search by vehicle number, forced checkout.
+- **Super Admins:** Full system control, manage Users, assign Roles, generate QR codes, view System Health & Global Reports.
+
+### 2. Concurrency Control
+Check-in uses MongoDB session transactions:
+1. `findOneAndUpdate` with `status: "available"` atomically claims the space.
+2. If space is already occupied → `409 Space Already Taken`.
+3. Full rollback on any intermediate failure.
+
+### 3. Edge AI Context Storage
+1. On parking, TensorFlow.js COCO-SSD detects surroundings (e.g., "Near the Fire Extinguisher").
+2. Hint is stored in MongoDB; captured frame is stored locally in IndexedDB/LocalStorage.
+3. No user images are sent to the backend to ensure privacy.
+
+---
+
+## Deployment
+
+**Backend** → Render / Railway / Heroku
+**Frontend** → Vercel / Netlify
+**Database** → MongoDB Atlas M0 (Free)
+
+### Steps for Vercel/Netlify:
+1. Ensure the PWA plugin is correctly configured for production.
+2. Set `VITE_API_BASE_URL` in your frontend environment variables to point to the deployed backend URL.
+3. Build command: `npm run build`
+4. Output directory: `dist`
+
+---
+
+*TriLens_AI — Developed as a 3rd Year Mini-Project | Smart Parking with Edge AI*
