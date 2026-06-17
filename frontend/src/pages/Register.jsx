@@ -42,6 +42,7 @@ const DEPARTMENTS = [
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [userType, setUserType] = useState("student");
   const [form, setForm] = useState({
     studentId: "",
     name: "",
@@ -66,10 +67,20 @@ export default function Register() {
     if (form.password.length < 6) {
       return setError("Password must be at least 6 characters");
     }
+
+    if (userType === "student" && !form.department) {
+      return setError("Please select a department");
+    }
+
     setLoading(true);
     try {
       const payload = { ...form };
       delete payload.confirmPassword;
+
+      if (userType === "normal") {
+        payload.department = "General";
+      }
+
       await register(payload);
       navigate("/dashboard");
     } catch (err) {
@@ -94,18 +105,38 @@ export default function Register() {
         </div>
 
         <div className="auth-form">
-          <h2 className="text-[#F8FAFC] font-semibold text-base mb-4">Registration</h2>
+          <div className="flex gap-2 mb-2 p-1 bg-[#0F172A] rounded-lg border border-[#334155]">
+            <button
+              type="button"
+              onClick={() => { setUserType("student"); setError(""); }}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${userType === "student" ? "bg-[#2563EB] text-white" : "text-[#94A3B8] hover:text-[#F8FAFC]"
+                }`}
+            >
+              Student
+            </button>
+            <button
+              type="button"
+              onClick={() => { setUserType("normal"); setError(""); }}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${userType === "normal" ? "bg-[#2563EB] text-white" : "text-[#94A3B8] hover:text-[#F8FAFC]"
+                }`}
+            >
+              Normal User
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="form-group">
-                <label className="form-label" htmlFor="reg-studentId">Student ID</label>
+                <label className="form-label" htmlFor="reg-studentId">
+                  {userType === "student" ? "Student ID" : "Mobile / User ID"}
+                </label>
                 <input
                   id="reg-studentId"
                   name="studentId"
                   type="text"
                   autoComplete="username"
                   className="form-input"
-                  placeholder="e.g. 21CS047"
+                  placeholder={userType === "student" ? "e.g. 21CS047" : "e.g. 9876543210"}
                   value={form.studentId}
                   onChange={handleChange}
                   required
@@ -128,23 +159,25 @@ export default function Register() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label" htmlFor="reg-department">Department</label>
-                <select
-                  id="reg-department"
-                  name="department"
-                  className="form-select"
-                  value={form.department}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="">Select department</option>
-                  {DEPARTMENTS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
+              {userType === "student" && (
+                <div className="form-group fade-in">
+                  <label className="form-label" htmlFor="reg-department">Department</label>
+                  <select
+                    id="reg-department"
+                    name="department"
+                    className="form-select"
+                    value={form.department}
+                    onChange={handleChange}
+                    required={userType === "student"}
+                  >
+                    <option value="">Select department</option>
+                    {DEPARTMENTS.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div className={`form-group ${userType === "normal" ? "sm:col-span-2" : ""}`}>
                 <label className="form-label" htmlFor="reg-vehicleNumber">Vehicle Number</label>
                 <input
                   id="reg-vehicleNumber"
@@ -160,57 +193,59 @@ export default function Register() {
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="reg-password">Password</label>
-              <div className="relative">
-                <input
-                  id="reg-password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  className="form-input pr-10"
-                  placeholder="Min. 6 characters"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                />
-                <button
-                  id="reg-toggle-password"
-                  type="button"
-                  tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  <EyeIcon visible={showPassword} />
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="form-group">
+                <label className="form-label" htmlFor="reg-password">Password</label>
+                <div className="relative">
+                  <input
+                    id="reg-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    className="form-input pr-10"
+                    placeholder="Min. 6 characters"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    id="reg-toggle-password"
+                    type="button"
+                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    <EyeIcon visible={showPassword} />
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="reg-confirmPassword">Confirm Password</label>
-              <div className="relative">
-                <input
-                  id="reg-confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirm ? "text" : "password"}
-                  autoComplete="new-password"
-                  className="form-input pr-10"
-                  placeholder="Re-enter password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  required
-                />
-                <button
-                  id="reg-toggle-confirm"
-                  type="button"
-                  tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  aria-label={showConfirm ? "Hide password" : "Show password"}
-                >
-                  <EyeIcon visible={showConfirm} />
-                </button>
+              <div className="form-group">
+                <label className="form-label" htmlFor="reg-confirmPassword">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    id="reg-confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirm ? "text" : "password"}
+                    autoComplete="new-password"
+                    className="form-input pr-10"
+                    placeholder="Re-enter password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    id="reg-toggle-confirm"
+                    type="button"
+                    tabIndex={-1}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#F8FAFC] transition-colors"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    aria-label={showConfirm ? "Hide password" : "Show password"}
+                  >
+                    <EyeIcon visible={showConfirm} />
+                  </button>
+                </div>
               </div>
             </div>
 

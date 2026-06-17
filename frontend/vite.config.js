@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "logo192.png", "logo512.png"],
+      includeAssets: ["favicon.svg", "logo192.png", "logo512.png"],
       manifest: {
         name: "ParkSys – Parking Management System",
         short_name: "ParkSys",
