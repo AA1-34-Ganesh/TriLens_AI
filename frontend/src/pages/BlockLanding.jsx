@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Footer from "../components/Footer";
 
@@ -8,191 +8,6 @@ const statusLabel = (s) => {
   if (s === "occupied") return "Taken";
   return "Reserved";
 };
-
-
-function VehicleForm({ space, blockId, onSuccess, onCancel }) {
-  const [form, setForm] = useState({
-    ownerName: "",
-    mobileNumber: "",
-    vehicleNumber: "",
-    vehicleType: "car",
-    userType: "visitor"
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (form.mobileNumber.replace(/\D/g, "").length < 10) {
-      setError("Please enter a valid 10-digit mobile number");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.post(`/blocks/${blockId}/park`, {
-        buildingName: space.buildingName,
-        floorLevel: space.floorLevel,
-        spaceId: space.spaceId,
-        ...form,
-        vehicleNumber: form.vehicleNumber.toUpperCase()
-      });
-      onSuccess(res.data);
-    } catch (err) {
-      setError(err.response?.data?.message || "Slot unavailable. Please select another.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-box" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <div>
-            <p className="modal-title">Enter Vehicle Details</p>
-            <p className="text-[#94A3B8] text-xs mt-0.5">
-              {space.buildingName} &middot; {space.floorLevel} &middot; <span className="text-[#2563EB] font-semibold">{space.spaceId}</span>
-            </p>
-          </div>
-          <button onClick={onCancel} className="btn-ghost btn-icon">✕</button>
-        </div>
-
-        <div className="modal-body">
-          <form onSubmit={submit} className="space-y-4">
-            <div className="form-group">
-              <label className="form-label">Owner Name *</label>
-              <input
-                className="form-input"
-                placeholder="e.g. Arun Kumar"
-                value={form.ownerName}
-                onChange={e => setForm({ ...form, ownerName: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Mobile Number *</label>
-              <input
-                className="form-input"
-                type="tel"
-                placeholder="e.g. 9876543210"
-                value={form.mobileNumber}
-                onChange={e => setForm({ ...form, mobileNumber: e.target.value })}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Vehicle Number *</label>
-              <input
-                className="form-input uppercase"
-                placeholder="e.g. TN07AB1234"
-                value={form.vehicleNumber}
-                onChange={e => setForm({ ...form, vehicleNumber: e.target.value.toUpperCase() })}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Vehicle Type</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { v: "bike", label: "🏍️ Bike" },
-                  { v: "car", label: "🚗 Car" }
-                ].map(opt => (
-                  <button
-                    key={opt.v}
-                    type="button"
-                    onClick={() => setForm({ ...form, vehicleType: opt.v })}
-                    className={`py-2 rounded-md border text-sm transition-all ${
-                      form.vehicleType === opt.v
-                        ? "bg-[#2563EB]/15 border-[#2563EB] text-[#2563EB] font-semibold"
-                        : "bg-[#0F172A] border-[#334155] text-[#94A3B8]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">User Type</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { v: "resident", label: " Resident" },
-                  { v: "visitor", label: " Visitor" }
-                ].map(opt => (
-                  <button
-                    key={opt.v}
-                    type="button"
-                    onClick={() => setForm({ ...form, userType: opt.v })}
-                    className={`py-2 rounded-md border text-sm transition-all ${
-                      form.userType === opt.v
-                        ? "bg-[#2563EB]/15 border-[#2563EB] text-[#2563EB] font-semibold"
-                        : "bg-[#0F172A] border-[#334155] text-[#94A3B8]"
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {error && <div className="alert-error" role="alert">{error}</div>}
-
-            <div className="flex gap-3 pt-2">
-              <button type="button" onClick={onCancel} className="btn-secondary w-full">Cancel</button>
-              <button type="submit" className="btn-primary w-full" disabled={loading}>
-                {loading ? "Parking..." : "Confirm Park"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-function SuccessScreen({ result, blockName, onDone }) {
-  return (
-    <div className="auth-shell">
-      <div className="auth-card">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-[#22C55E]/15 border border-[#22C55E]/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-[#22C55E]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" /></svg>
-          </div>
-          <h1 className="text-[#F8FAFC] text-2xl font-bold mb-1">Parked Successfully!</h1>
-          <p className="text-[#94A3B8] text-sm">{blockName}</p>
-        </div>
-
-        <div className="card space-y-3 mb-5">
-          {[
-            { label: "Space ID", value: result.spaceId, accent: true },
-            { label: "Building / Floor", value: `${result.buildingName} · ${result.floorLevel}` },
-            { label: "Vehicle Number", value: result.vehicleNumber },
-            { label: "Owner", value: result.ownerName },
-            { label: "Check-In Time", value: new Date(result.timestampIn).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }) }
-          ].map(row => (
-            <div key={row.label} className="flex justify-between items-center">
-              <span className="text-[#94A3B8] text-xs">{row.label}</span>
-              <span className={`font-semibold text-sm ${row.accent ? "text-[#2563EB]" : "text-[#F8FAFC]"}`}>{row.value}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="alert-info mb-5 justify-center text-center">
-           Screenshot this confirmation for your records. No login required.
-        </div>
-
-        <button onClick={onDone} className="btn-primary w-full">Done</button>
-      </div>
-    </div>
-  );
-}
-
 
 function BlockMap({ blockId, onSelectSpace, highlightSpaceId }) {
   const [mapData, setMapData] = useState(null);
@@ -309,15 +124,13 @@ function BlockMap({ blockId, onSelectSpace, highlightSpaceId }) {
   );
 }
 
-
 export default function BlockLanding() {
   const { blockId } = useParams();
+  const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [view, setView] = useState("overview");
-  const [selectedSpace, setSelectedSpace] = useState(null);
-  const [successData, setSuccessData] = useState(null);
 
   const fetchOverview = useCallback(async () => {
     try {
@@ -336,10 +149,6 @@ export default function BlockLanding() {
     return () => clearInterval(interval);
   }, [fetchOverview]);
 
-  if (view === "success" && successData) {
-    return <SuccessScreen result={successData} blockName={overview?.blockName || blockId} onDone={() => { setView("overview"); setSuccessData(null); setSelectedSpace(null); fetchOverview(); }} />;
-  }
-
   if (loading) return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center"><div className="text-[#94A3B8] text-sm animate-pulse">Loading {blockId}...</div></div>;
   if (error) return <div className="min-h-screen bg-[#0F172A] flex items-center justify-center"><div className="empty-box"><p className="empty-title">Block Not Found</p><p className="empty-desc">{error}</p></div></div>;
 
@@ -349,7 +158,7 @@ export default function BlockLanding() {
   return (
     <div className="min-h-screen bg-[#0F172A] pb-10">
       <header className="sticky top-0 z-30 bg-[#1E293B] border-b border-[#334155] px-4 py-3 flex items-center gap-3">
-        {view !== "overview" && <button onClick={() => setView(view === "form" ? "map" : "overview")} className="text-[#94A3B8] hover:text-[#F8FAFC]">←</button>}
+        {view !== "overview" && <button onClick={() => setView("overview")} className="text-[#94A3B8] hover:text-[#F8FAFC]">←</button>}
         <div className="w-8 h-8 bg-[#2563EB]/15 rounded-md flex items-center justify-center text-[#2563EB] font-semibold text-xs shrink-0">BL</div>
         <div className="flex-1 min-w-0">
           <h1 className="text-[#F8FAFC] font-semibold text-sm truncate">{overview.blockName}</h1>
@@ -403,7 +212,7 @@ export default function BlockLanding() {
             </div>
 
             {overview.totalAvailable === 0 && <div className="alert-error justify-center" role="alert">This block is full.</div>}
-            <div className="alert-info justify-center text-[11px]">No login required. Select a space on the map.</div>
+            <div className="alert-info justify-center text-[11px]">Select a space to create an account and park.</div>
           </div>
         )}
 
@@ -414,10 +223,12 @@ export default function BlockLanding() {
                 <p className="card-title">Interactive Map</p>
                 <span className="badge-green">{overview.totalAvailable} Available</span>
               </div>
-              <p className="text-[#94A3B8] text-xs mb-4">Tap an available (green) space to select.</p>
-              <BlockMap blockId={blockId} onSelectSpace={(s) => { setSelectedSpace(s); setView("form"); }} highlightSpaceId={selectedSpace?.spaceId} />
+              <p className="text-[#94A3B8] text-xs mb-4">Tap an available (green) space to continue.</p>
+              <BlockMap 
+                blockId={blockId} 
+                onSelectSpace={() => navigate("/register")} 
+              />
             </div>
-            {selectedSpace && <button onClick={() => setView("form")} className="btn-primary w-full py-3">Proceed with {selectedSpace.spaceId}</button>}
           </div>
         )}
       </div>
