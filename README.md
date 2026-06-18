@@ -1,6 +1,6 @@
 # TriLens_AI — Smart Campus Parking Management System
 
-> Third Year Engineering Mini-Project | Edge AI + QR + PWA + MongoDB Atlas
+>  Edge AI + QR + PWA + MongoDB Atlas
 
 ---
 Live URL=https://trilens-ai.netlify.app
@@ -46,8 +46,8 @@ TriLens_AI/
 │   ├── middleware/auth.js
 │   ├── models/ (User, Building, Block, Space, ParkingLog)
 │   ├── routes/ (auth, admin, parking, user, block)
-│   ├── seed.js
-│   └── server.js
+│   ├── server.js
+│
 │
 └── frontend/
     ├── public/ (PWA icons and manifest)
@@ -89,13 +89,10 @@ npm install
 Edit `backend/.env`:
 
 ```env
-MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/trilens_ai?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/database_name?retryWrites=true&w=majority
 JWT_SECRET=trilens_super_secret_key_2024
 PORT=5000
 ```
-
-> **Important:** MongoDB Atlas must use a replica set (Atlas free tier M0 qualifies) for session-based transactions.
-
 ### 3. Run Development Servers
 
 ```bash
@@ -131,20 +128,4 @@ Check-in uses MongoDB session transactions:
 2. Hint is stored in MongoDB; captured frame is stored locally in IndexedDB/LocalStorage.
 3. No user images are sent to the backend to ensure privacy.
 
----
-
-## Deployment
-
-**Backend** → Render / Railway / Heroku
-**Frontend** → Vercel / Netlify
-**Database** → MongoDB Atlas M0 (Free)
-
-### Steps for Vercel/Netlify:
-1. Ensure the PWA plugin is correctly configured for production.
-2. Set `VITE_API_BASE_URL` in your frontend environment variables to point to the deployed backend URL.
-3. Build command: `npm run build`
-4. Output directory: `dist`
-
----
-
-*TriLens_AI — Developed as a 3rd Year Mini-Project | Smart Parking with Edge AI*
+*TriLens_AI — Smart Parking with Edge AI*
